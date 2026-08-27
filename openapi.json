@@ -1,0 +1,1331 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "simlir Public API",
+    "version": "1.0.0",
+    "description": "The public, market-scoped simlir product intelligence API. This contract describes the deployed REST and hosted MCP surfaces only. It excludes internal database fields, ingestion metadata, embeddings, staff exports, and speculative endpoints.",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "x-simlir-contract-status": "verified-from-code",
+    "x-simlir-contract-source": [
+      "app/api/v1/[...endpoint]/route.ts",
+      "supabase/functions/api-search/index.ts",
+      "supabase/functions/api-search-image/index.ts",
+      "supabase/functions/api-product/index.ts",
+      "supabase/functions/api-lookup/index.ts",
+      "supabase/functions/api-mcp/index.ts",
+      "lib/api/transform.ts",
+      "supabase/functions/_shared/transform.ts"
+    ]
+  },
+  "servers": [
+    {
+      "url": "https://simlir.com/api",
+      "description": "Production same-origin API proxy"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/search": {
+      "get": {
+        "operationId": "semanticSearch",
+        "summary": "Search products semantically",
+        "description": "Market-scoped semantic product search. The returned results array may contain fewer items than limit after the exact-limit relevance guard.",
+        "x-simlir-credits": 2,
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Natural-language product query.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MarketGl"
+          },
+          {
+            "$ref": "#/components/parameters/Category"
+          },
+          {
+            "$ref": "#/components/parameters/Brand"
+          },
+          {
+            "$ref": "#/components/parameters/MinPrice"
+          },
+          {
+            "$ref": "#/components/parameters/MaxPrice"
+          },
+          {
+            "$ref": "#/components/parameters/SearchLimit"
+          },
+          {
+            "$ref": "#/components/parameters/SearchOffset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SearchResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidApiKey"
+          },
+          "402": {
+            "$ref": "#/components/responses/InsufficientCredits"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccountFrozen"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/search/image": {
+      "post": {
+        "operationId": "visualSearch",
+        "summary": "Search products from an image",
+        "description": "Market-scoped product search from a hosted HTTPS image URL, optionally fused with natural-language shopper context. The returned results array may contain fewer items than limit after the shared product-fit relevance guard.",
+        "x-simlir-credits": 3,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ImageSearchResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidApiKey"
+          },
+          "402": {
+            "$ref": "#/components/responses/InsufficientCredits"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccountFrozen"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/product": {
+      "get": {
+        "operationId": "getProduct",
+        "summary": "Get a product by UUID",
+        "description": "Exact lookup of one extracted, non-canary product by its simlir UUID.",
+        "x-simlir-credits": 1,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Product UUID returned by a search or identifier lookup.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ProductResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidApiKey"
+          },
+          "402": {
+            "$ref": "#/components/responses/InsufficientCredits"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccountFrozen"
+          },
+          "404": {
+            "$ref": "#/components/responses/ProductNotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/lookup": {
+      "get": {
+        "operationId": "lookupProductsByIdentifier",
+        "summary": "Look up products by exact identifier",
+        "description": "Exact market-scoped lookup by GTIN, MPN/model number, or retailer SKU. auto tries GTIN, then MPN, then SKU.",
+        "x-simlir-credits": 1,
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "query",
+            "required": true,
+            "description": "GTIN, MPN/model number, or retailer SKU.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Lookup strategy. Defaults to auto.",
+            "schema": {
+              "$ref": "#/components/schemas/IdentifierLookupType"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MarketGl"
+          },
+          {
+            "$ref": "#/components/parameters/Brand"
+          },
+          {
+            "name": "retailer",
+            "in": "query",
+            "required": false,
+            "description": "Optional retailer filter, especially useful for retailer SKU lookups.",
+            "schema": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          {
+            "$ref": "#/components/parameters/LookupLimit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/LookupResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParams"
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidApiKey"
+          },
+          "402": {
+            "$ref": "#/components/responses/InsufficientCredits"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccountFrozen"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/mcp": {
+      "post": {
+        "operationId": "mcpJsonRpc",
+        "summary": "Use the hosted MCP server",
+        "description": "Streamable HTTP JSON-RPC 2.0 MCP endpoint. initialize is unauthenticated; tools/list and tools/call require the same Bearer API key used by the REST API and consume the documented credit cost for each tool call.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/McpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC success or error envelope. Authentication and MCP method errors are returned inside the JSON-RPC envelope with HTTP 200.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/McpResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/McpBadRequest"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Simlir API key",
+        "description": "Use the API key issued by the Simlir dashboard. Never commit or expose it in browser code, source control, logs, or public examples."
+      }
+    },
+    "parameters": {
+      "MarketGl": {
+        "name": "gl",
+        "in": "query",
+        "required": true,
+        "description": "Required shopper market code.",
+        "schema": {
+          "$ref": "#/components/schemas/MarketCode"
+        }
+      },
+      "Category": {
+        "name": "category",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "Brand": {
+        "name": "brand",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "maxLength": 160
+        }
+      },
+      "MinPrice": {
+        "name": "min_price",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "MaxPrice": {
+        "name": "max_price",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "SearchLimit": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Maximum number of results requested. The service may return fewer.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 20
+        }
+      },
+      "SearchOffset": {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 500,
+          "default": 0
+        }
+      },
+      "LookupLimit": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 20
+        }
+      }
+    },
+    "headers": {
+      "X-Request-Id": {
+        "description": "Request correlation ID returned by the public proxy.",
+        "schema": {
+          "type": "string",
+          "maxLength": 160
+        }
+      },
+      "X-RateLimit-Limit": {
+        "description": "Requests allowed in the current account window.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Requests remaining in the current account window.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "X-RateLimit-Reset": {
+        "description": "Unix epoch seconds when the current account window resets.",
+        "schema": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 0
+        }
+      },
+      "Retry-After": {
+        "description": "Seconds to wait before retrying a rate-limited request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "schemas": {
+      "MarketCode": {
+        "type": "string",
+        "enum": ["gb", "us", "de", "fr", "es", "it", "au", "ca"]
+      },
+      "IdentifierLookupType": {
+        "type": "string",
+        "enum": ["auto", "gtin", "mpn", "sku"],
+        "default": "auto"
+      },
+      "ApiProduct": {
+        "type": "object",
+        "unevaluatedProperties": false,
+        "required": [
+          "id",
+          "brand",
+          "category",
+          "gtin",
+          "title",
+          "description",
+          "product_description",
+          "spec",
+          "cosmetic_features",
+          "key_selling_points",
+          "use_cases",
+          "image_url",
+          "images",
+          "visual",
+          "certifications",
+          "materials",
+          "dimensions",
+          "weight",
+          "colour",
+          "release_year",
+          "country_of_origin",
+          "compatible_with",
+          "included_in_box",
+          "model_number",
+          "retailer_sku",
+          "product_identifiers",
+          "review_score",
+          "review_count",
+          "pricing_model",
+          "product_condition",
+          "price",
+          "links",
+          "market"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "gtin": {
+            "type": ["string", "null"]
+          },
+          "title": {
+            "type": ["string", "null"],
+            "description": "Public canonical title, not the internal discovery title."
+          },
+          "description": {
+            "type": ["string", "null"]
+          },
+          "product_description": {
+            "type": ["string", "null"]
+          },
+          "spec": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "cosmetic_features": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "key_selling_points": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            }
+          },
+          "use_cases": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            }
+          },
+          "image_url": {
+            "type": ["string", "null"],
+            "format": "uri"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "visual": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/VisualSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "certifications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dimensions": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Dimensions"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weight": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Weight"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "colour": {
+            "$ref": "#/components/schemas/Colour"
+          },
+          "release_year": {
+            "type": ["integer", "null"]
+          },
+          "country_of_origin": {
+            "type": ["string", "null"]
+          },
+          "compatible_with": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "included_in_box": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "model_number": {
+            "type": ["string", "null"]
+          },
+          "retailer_sku": {
+            "type": ["string", "null"]
+          },
+          "product_identifiers": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "review_score": {
+            "type": ["number", "null"]
+          },
+          "review_count": {
+            "type": ["integer", "null"]
+          },
+          "pricing_model": {
+            "type": "string",
+            "enum": ["one_off", "contract_monthly", "subscription_recurring", "unknown"]
+          },
+          "product_condition": {
+            "type": "string",
+            "enum": ["new", "refurbished", "used", "open_box", "unknown"]
+          },
+          "price": {
+            "$ref": "#/components/schemas/Price"
+          },
+          "links": {
+            "$ref": "#/components/schemas/ProductLinks"
+          },
+          "market": {
+            "$ref": "#/components/schemas/MarketCode"
+          }
+        }
+      },
+      "VisualSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["summary", "labels", "detected_text", "dominant_colours"],
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "detected_text": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dominant_colours": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Dimensions": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "unit"],
+        "properties": {
+          "value": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "unit": {
+            "type": "string"
+          }
+        }
+      },
+      "Weight": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "unit"],
+        "properties": {
+          "value": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          }
+        }
+      },
+      "Colour": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["primary", "family"],
+        "properties": {
+          "primary": {
+            "type": ["string", "null"]
+          },
+          "family": {
+            "type": ["string", "null"]
+          }
+        }
+      },
+      "Price": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["amount", "currency", "retailer", "as_of"],
+        "properties": {
+          "amount": {
+            "type": ["number", "null"]
+          },
+          "currency": {
+            "type": ["string", "null"]
+          },
+          "retailer": {
+            "type": ["string", "null"]
+          },
+          "as_of": {
+            "type": ["string", "null"],
+            "description": "Date of the confirmed price snapshot when available."
+          }
+        }
+      },
+      "ProductLinks": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["buy", "retailer"],
+        "properties": {
+          "buy": {
+            "type": ["string", "null"],
+            "format": "uri"
+          },
+          "retailer": {
+            "type": ["string", "null"],
+            "format": "uri"
+          }
+        }
+      },
+      "SearchResult": {
+        "unevaluatedProperties": false,
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiProduct"
+          },
+          {
+            "type": "object",
+            "required": ["relevance_score"],
+            "properties": {
+              "relevance_score": {
+                "type": ["number", "null"]
+              }
+            }
+          }
+        ]
+      },
+      "SearchResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["results", "meta"],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/SearchMeta"
+          }
+        }
+      },
+      "SearchMeta": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["query", "mode", "market", "total_results", "limit", "offset", "credits_used"],
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "mode": {
+            "const": "semantic"
+          },
+          "market": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "total_results": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "credits_used": {
+            "const": 2
+          }
+        }
+      },
+      "ImageSearchRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["image_url"],
+        "anyOf": [
+          { "required": ["market"] },
+          { "required": ["gl"] }
+        ],
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://"
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Optional natural-language context or hard requirement to combine with the image before product-fit ranking."
+          },
+          "market": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "gl": {
+            "$ref": "#/components/schemas/MarketCode",
+            "description": "Legacy alias accepted by the deployed endpoint; prefer market."
+          },
+          "category": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "min_price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "max_price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500,
+            "default": 0
+          }
+        }
+      },
+      "ImageSearchResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["results", "meta"],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ImageSearchMeta"
+          }
+        }
+      },
+      "ImageSearchMeta": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["mode", "market", "total_results", "limit", "offset", "credits_used"],
+        "properties": {
+          "mode": {
+            "const": "visual"
+          },
+          "market": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "The optional natural-language context used alongside the image."
+          },
+          "total_results": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "credits_used": {
+            "const": 3
+          }
+        }
+      },
+      "ProductResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["product", "credits_used"],
+        "properties": {
+          "product": {
+            "$ref": "#/components/schemas/ApiProduct"
+          },
+          "credits_used": {
+            "const": 1
+          }
+        }
+      },
+      "LookupResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["results", "meta"],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiProduct"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/LookupMeta"
+          }
+        }
+      },
+      "LookupMeta": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["identifier", "requested_type", "resolved_type", "matched_field", "market", "brand", "retailer", "total_results", "limit", "credits_used"],
+        "properties": {
+          "identifier": {
+            "type": "string"
+          },
+          "requested_type": {
+            "$ref": "#/components/schemas/IdentifierLookupType"
+          },
+          "resolved_type": {
+            "type": ["string", "null"],
+            "enum": ["gtin", "mpn", "sku", null]
+          },
+          "matched_field": {
+            "type": ["string", "null"],
+            "enum": ["gtin", "model_number", "retailer_sku", null]
+          },
+          "market": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "brand": {
+            "type": ["string", "null"]
+          },
+          "retailer": {
+            "type": ["string", "null"]
+          },
+          "total_results": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "credits_used": {
+            "const": 1
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error", "message"],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "RateLimitError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error", "limit", "window", "retry_after_seconds"],
+        "properties": {
+          "error": {
+            "const": "rate_limit_exceeded"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "window": {
+            "type": "string"
+          },
+          "retry_after_seconds": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "McpRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["jsonrpc", "method"],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "method": {
+            "type": "string",
+            "enum": ["initialize", "tools/list", "tools/call"]
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "id": {
+            "type": ["string", "integer", "null"]
+          }
+        }
+      },
+      "McpResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["jsonrpc", "id"],
+        "properties": {
+          "jsonrpc": {
+            "const": "2.0"
+          },
+          "id": {
+            "type": ["string", "integer", "null"]
+          },
+          "result": {},
+          "error": {
+            "$ref": "#/components/schemas/McpError"
+          }
+        },
+        "oneOf": [
+          {
+            "required": ["result"],
+            "not": {
+              "required": ["error"]
+            }
+          },
+          {
+            "required": ["error"],
+            "not": {
+              "required": ["result"]
+            }
+          }
+        ]
+      },
+      "McpError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [-32700, -32600, -32601, -32602, -32603, -32001, -32003, -32004]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {}
+        }
+      }
+    },
+    "responses": {
+      "SearchResponse": {
+        "description": "Semantic search response",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
+          "X-RateLimit-Limit": { "$ref": "#/components/headers/X-RateLimit-Limit" },
+          "X-RateLimit-Remaining": { "$ref": "#/components/headers/X-RateLimit-Remaining" },
+          "X-RateLimit-Reset": { "$ref": "#/components/headers/X-RateLimit-Reset" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchResponse"
+            }
+          }
+        }
+      },
+      "ImageSearchResponse": {
+        "description": "Visual search response",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
+          "X-RateLimit-Limit": { "$ref": "#/components/headers/X-RateLimit-Limit" },
+          "X-RateLimit-Remaining": { "$ref": "#/components/headers/X-RateLimit-Remaining" },
+          "X-RateLimit-Reset": { "$ref": "#/components/headers/X-RateLimit-Reset" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ImageSearchResponse"
+            }
+          }
+        }
+      },
+      "ProductResponse": {
+        "description": "Product lookup response",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
+          "X-RateLimit-Limit": { "$ref": "#/components/headers/X-RateLimit-Limit" },
+          "X-RateLimit-Remaining": { "$ref": "#/components/headers/X-RateLimit-Remaining" },
+          "X-RateLimit-Reset": { "$ref": "#/components/headers/X-RateLimit-Reset" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProductResponse"
+            }
+          }
+        }
+      },
+      "LookupResponse": {
+        "description": "Identifier lookup response",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
+          "X-RateLimit-Limit": { "$ref": "#/components/headers/X-RateLimit-Limit" },
+          "X-RateLimit-Remaining": { "$ref": "#/components/headers/X-RateLimit-Remaining" },
+          "X-RateLimit-Reset": { "$ref": "#/components/headers/X-RateLimit-Reset" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/LookupResponse"
+            }
+          }
+        }
+      },
+      "InvalidParams": {
+        "description": "The request parameters or body are invalid.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "InvalidApiKey": {
+        "description": "The API key is missing, invalid, or revoked.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "InsufficientCredits": {
+        "description": "The account has insufficient credits.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "AccountFrozen": {
+        "description": "The account is frozen by staff review.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ProductNotFound": {
+        "description": "No product matched the UUID.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "MethodNotAllowed": {
+        "description": "The HTTP method is not supported for this public route.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
+          "Allow": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "PayloadTooLarge": {
+        "description": "The image-search request body exceeds the deployed 64 KiB limit.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "RateLimitExceeded": {
+        "description": "The account exceeded a rate limit. Retry after the indicated interval.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
+          "X-RateLimit-Limit": {
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "X-RateLimit-Remaining": {
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "X-RateLimit-Reset": {
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "Retry-After": {
+            "schema": {
+              "type": "integer"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RateLimitError"
+            }
+          }
+        }
+      },
+      "UpstreamFailure": {
+        "description": "A required embedding, visual-search, or other upstream dependency was unavailable.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "An unexpected server error. The response is intentionally generic; use the returned request ID with support.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "McpBadRequest": {
+        "description": "Invalid JSON or invalid JSON-RPC request. MCP method/auth errors use the 200 JSON-RPC envelope.",
+        "headers": {
+          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/McpResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}

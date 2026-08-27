@@ -1,0 +1,5 @@
+{
+  "jsonrpc": "2.0",
+  "error": { "code": -32001, "message": "Invalid API key.", "data": null },
+  "id": 1
+}

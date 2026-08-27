@@ -1,0 +1,6 @@
+{
+  "error": "rate_limit_exceeded",
+  "limit": 5000,
+  "window": "60s",
+  "retry_after_seconds": 60
+}

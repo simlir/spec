@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "fixtures": [
+    { "file": "search-success.json", "schema": "SearchResponse", "purpose": "semantic search with one result" },
+    { "file": "search-empty.json", "schema": "SearchResponse", "purpose": "semantic search with an empty guarded page" },
+    { "file": "image-search-success.json", "schema": "ImageSearchResponse", "purpose": "visual search with one result" },
+    { "file": "image-search-request.json", "schema": "ImageSearchRequest", "purpose": "visual search request using the preferred market field" },
+    { "file": "product-success.json", "schema": "ProductResponse", "purpose": "UUID product lookup" },
+    { "file": "lookup-success.json", "schema": "LookupResponse", "purpose": "exact identifier lookup" },
+    { "file": "error-invalid-params.json", "schema": "Error", "purpose": "safe validation error" },
+    { "file": "error-auth.json", "schema": "Error", "purpose": "safe authentication error" },
+    { "file": "error-credits.json", "schema": "Error", "purpose": "safe insufficient-credit error" },
+    { "file": "error-provider-failure.json", "schema": "Error", "purpose": "safe provider failure" },
+    { "file": "error-rate-limit.json", "schema": "RateLimitError", "purpose": "rate-limit body" },
+    { "file": "mcp-initialize-success.json", "schema": "McpResponse", "purpose": "unauthenticated MCP initialize" },
+    { "file": "mcp-auth-error.json", "schema": "McpResponse", "purpose": "authenticated MCP error envelope" }
+  ]
+}

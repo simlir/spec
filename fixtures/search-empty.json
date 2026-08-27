@@ -1,0 +1,12 @@
+{
+  "results": [],
+  "meta": {
+    "query": "product with no fixture match",
+    "mode": "semantic",
+    "market": "gb",
+    "total_results": 0,
+    "limit": 10,
+    "offset": 0,
+    "credits_used": 2
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "image_url": "https://img.example.test/query.jpg",
+  "query": "a compact smartphone for gaming",
+  "market": "gb",
+  "category": "smartphone",
+  "limit": 10,
+  "offset": 0
+}

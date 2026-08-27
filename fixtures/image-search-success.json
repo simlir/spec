@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "brand": "TestBrand",
+      "category": "smartphone",
+      "gtin": "05051234567890",
+      "title": "Test Smartphone",
+      "description": "A contract fixture product.",
+      "product_description": "A contract fixture product.",
+      "spec": { "battery": "5000mAh" },
+      "cosmetic_features": { "colour": "Space Grey" },
+      "key_selling_points": ["fast", "durable"],
+      "use_cases": ["gaming", "work"],
+      "image_url": "https://img.example.test/product.jpg",
+      "images": ["https://img.example.test/product.jpg"],
+      "visual": { "summary": "A grey smartphone.", "labels": ["smartphone"], "detected_text": [], "dominant_colours": ["grey"] },
+      "certifications": ["energy_star"],
+      "materials": ["aluminium", "glass"],
+      "dimensions": { "value": { "l": 16.7, "w": 7.7, "h": 0.83 }, "unit": "cm" },
+      "weight": { "value": 188, "unit": "g" },
+      "colour": { "primary": "Space Grey", "family": "grey" },
+      "release_year": 2024,
+      "country_of_origin": "CN",
+      "compatible_with": ["USB-C"],
+      "included_in_box": ["USB-C cable"],
+      "model_number": "A2849",
+      "retailer_sku": "FIXTURE-001",
+      "product_identifiers": { "article_number": "FIXTURE-001" },
+      "review_score": 4.8,
+      "review_count": 20,
+      "pricing_model": "one_off",
+      "product_condition": "new",
+      "price": { "amount": 999.99, "currency": "GBP", "retailer": "Example Retailer", "as_of": "2026-07-01" },
+      "links": { "buy": "https://retailer.example.test/products/fixture-001", "retailer": "https://retailer.example.test/products/fixture-001" },
+      "market": "gb",
+      "relevance_score": null
+    }
+  ],
+  "meta": { "mode": "visual", "market": "gb", "query": "a compact smartphone for gaming", "total_results": 1, "limit": 10, "offset": 0, "credits_used": 3 }
+}

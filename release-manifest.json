@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "release-candidate",
+  "contract": {
+    "version": "1.0.0",
+    "openapi": "3.1.0",
+    "sourcePath": "openapi.json",
+    "sourceSha256": "ba9e3f55884039e399ac26d0c58257d5b944820d5a3d4afad92b67aca41ed503"
+  },
+  "canonicalPublication": {
+    "mode": "dedicated-repository-release",
+    "repositorySlug": "simlir/spec",
+    "repositoryUrl": null,
+    "stablePublicUrl": null,
+    "packagePublication": "not-planned-for-v1",
+    "status": "unverified"
+  },
+  "artifacts": [
+    {
+      "path": "README.md",
+      "sha256": "2da3f17a7bd79fbea9fac7078322897fe270537c50dbb801c78bc7ad40aa0feb"
+    },
+    {
+      "path": "PUBLISHING.md",
+      "sha256": "31a4dfd32700c1b5f15c3e81d78f1de85cf76bf84c8a48234de0c02da8a8dd9c"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "fc711c8f64512395938917e7fce1aeb14be97e162f6cc211aac22d5133682bc1"
+    },
+    {
+      "path": "openapi.json",
+      "sha256": "ba9e3f55884039e399ac26d0c58257d5b944820d5a3d4afad92b67aca41ed503"
+    },
+    {
+      "path": "generated/types.ts",
+      "sha256": "edcefd7e94dd44c643a78dae4442b849938948d1c218f895986fb80d6b98f44c"
+    },
+    {
+      "path": "generated/types.py",
+      "sha256": "48eea59d65338a54c8b087904000db962318bca28aef26ee3b9c4d348a16c5c9"
+    },
+    {
+      "path": "fixtures/manifest.json",
+      "sha256": "394e8f7272d418ead480dafb8b390798abe30e82e57e222d02cf1a5c7fbe2202"
+    },
+    {
+      "path": "fixtures/search-success.json",
+      "sha256": "5978d624c050ec86e1c479d73ff778369fe27efa01ed85554ad7dd8867a2091a"
+    },
+    {
+      "path": "fixtures/search-empty.json",
+      "sha256": "80393bef332a171f822d4d30d8adce06de737ce634f0dc86bff12f45dc320922"
+    },
+    {
+      "path": "fixtures/image-search-success.json",
+      "sha256": "112b5a19cd8c93255106be38759fdc2d58e79454dd28e45795390f70ae669efb"
+    },
+    {
+      "path": "fixtures/image-search-request.json",
+      "sha256": "e50848b5761264d163c77f790df7f40ad27ab6ac61256bcafd6df54e6912855d"
+    },
+    {
+      "path": "fixtures/product-success.json",
+      "sha256": "cc9ce28345a347c99feee91ee9b769d588b125b557988f04a8451dd3502c9519"
+    },
+    {
+      "path": "fixtures/lookup-success.json",
+      "sha256": "4df8903e09bc7b06fe7c0079d65a155400385d946d7a3649a1390df0b949b410"
+    },
+    {
+      "path": "fixtures/error-invalid-params.json",
+      "sha256": "33d3b2c61591b7036c24417b7efe8a848ee37d10746d2250969577d9dd55a9d7"
+    },
+    {
+      "path": "fixtures/error-auth.json",
+      "sha256": "4b9aa6d57aa3a352c119bbb5ba8691459e4c905e8a204d7ef2789a2066b1d231"
+    },
+    {
+      "path": "fixtures/error-credits.json",
+      "sha256": "3e5616e9c1c15442bfd6bd2a5ff4ecc8662db1e4b9ef22f224d9c57932cd46fa"
+    },
+    {
+      "path": "fixtures/error-provider-failure.json",
+      "sha256": "977582a5335978607354eae8e14e968c9b7f9f9147d343c46762f95b19c4d677"
+    },
+    {
+      "path": "fixtures/error-rate-limit.json",
+      "sha256": "ba213eb533119e15a57935f998c9c8ae7c69bf072117fa2f18b33093f5675519"
+    },
+    {
+      "path": "fixtures/mcp-initialize-success.json",
+      "sha256": "a3b9dbdb9ee774ced5b320385ff1428445d0a1bcc0f3efbfb148540cbdfb5a54"
+    },
+    {
+      "path": "fixtures/mcp-auth-error.json",
+      "sha256": "5c6f968b2addce9291a0fd69be663cc938859e64800ee6bbc6753c57c275a15a"
+    }
+  ],
+  "fixtures": {
+    "manifestPath": "fixtures/manifest.json",
+    "count": 13,
+    "manifestSha256": "394e8f7272d418ead480dafb8b390798abe30e82e57e222d02cf1a5c7fbe2202"
+  },
+  "publicationGates": [
+    {
+      "id": "canonical-location",
+      "status": "decided",
+      "evidence": "release candidate recommends simlir/spec"
+    },
+    {
+      "id": "license-and-terms",
+      "status": "open",
+      "evidence": "legal/owner decision required before publication"
+    },
+    {
+      "id": "owner-and-permissions",
+      "status": "open",
+      "evidence": "external repository owner and release permissions not verified"
+    },
+    {
+      "id": "ci-and-secret-scan",
+      "status": "verified-in-repository",
+      "evidence": "api:contract:release:check and repository security gates"
+    },
+    {
+      "id": "stable-public-url",
+      "status": "unverified",
+      "evidence": "deployment and URL smoke proof required"
+    },
+    {
+      "id": "deployment-proof",
+      "status": "unverified",
+      "evidence": "exact release revision must be verified externally"
+    }
+  ],
+  "excludedContent": [
+    "application source and routes",
+    "database exports and internal fields",
+    "ingestion, embedding, and pipeline metadata",
+    "credentials, environment files, and provider configuration"
+  ]
+}

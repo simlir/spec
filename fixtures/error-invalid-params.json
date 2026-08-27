@@ -1,0 +1,4 @@
+{
+  "error": "invalid_params",
+  "message": "gl is required. Use one of gb, us, de, fr, es, it, au, ca."
+}
