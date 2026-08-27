@@ -1,0 +1,65 @@
+name: Validate public contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch the checked revision
+        run: |
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach "${GITHUB_SHA}"
+
+      - name: Validate contract, generated types, hashes, and release contents
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import re
+          import sys
+
+          root = pathlib.Path('.')
+          release = root / 'release-manifest.json'
+          contract = root / 'openapi.json'
+          manifest = json.loads(release.read_text())
+          spec = json.loads(contract.read_text())
+
+          if manifest['releaseStatus'] != 'release-candidate':
+              raise SystemExit('release status must remain release-candidate')
+          if manifest['canonicalPublication']['repositorySlug'] != 'simlir/spec':
+              raise SystemExit('unexpected canonical repository')
+          if manifest['canonicalPublication']['status'] != 'unverified':
+              raise SystemExit('external publication cannot be verified by CI')
+          if manifest['contract']['sourceSha256'] != hashlib.sha256(contract.read_bytes()).hexdigest():
+              raise SystemExit('openapi source hash mismatch')
+          license_name = spec['info']['license'].get('identifier', spec['info']['license'].get('name'))
+          if license_name != 'Apache-2.0':
+              raise SystemExit('contract licence must be Apache-2.0')
+
+          expected = {item['path']: item['sha256'] for item in manifest['artifacts']}
+          actual = {path.as_posix() for path in root.rglob('*') if path.is_file() and path.parts[0] not in {'.git', '.github'} and path.as_posix() != 'release-manifest.json'}
+          if actual != set(expected):
+              raise SystemExit(f'artifact set mismatch: unexpected={sorted(actual-set(expected))}, missing={sorted(set(expected)-actual)}')
+          for path, digest in expected.items():
+              file = root / path
+              if hashlib.sha256(file.read_bytes()).hexdigest() != digest:
+                  raise SystemExit(f'artifact hash mismatch: {path}')
+              if re.search(r'-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:gh[pousr]|github_pat|xox[baprs]-)[A-Za-z0-9_-]{12,}|\b(?:sk|pk)_(?:live|test)_[A-Za-z0-9]{12,}', file.read_text(errors='replace')):
+                  raise SystemExit(f'credential-shaped content: {path}')
+
+          for generated in ('generated/types.ts', 'generated/types.py'):
+              text = (root / generated).read_text()
+              if manifest['contract']['sourceSha256'] not in text:
+                  raise SystemExit(f'generated source hash missing: {generated}')
+          print(f'Validated {len(expected)} release artefacts and {manifest["fixtures"]["count"]} fixtures.')
+          PY
