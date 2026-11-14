@@ -36,8 +36,8 @@
       "get": {
         "operationId": "semanticSearch",
         "summary": "Search products semantically",
-        "description": "Market-scoped semantic product search. The returned results array may contain fewer items than limit after the exact-limit relevance guard.",
-        "x-simlir-credits": 2,
+        "description": "Market-scoped semantic product search. The service relevance-checks up to 50 Simlir catalogue candidates and up to 50 supplementary partner catalogue candidates, then returns at most 100 combined results. The default limit is 100 and applies to the combined response. Search text, market and filters are sent to a partner product catalogue; see the privacy policy. The returned results array may contain fewer items after relevance checking, filtering, deduplication, availability limits or provider failure.",
+        "x-simlir-credits": 1,
         "parameters": [
           {
             "name": "q",
@@ -64,6 +64,9 @@
           },
           {
             "$ref": "#/components/parameters/MaxPrice"
+          },
+          {
+            "$ref": "#/components/parameters/ShipsFrom"
           },
           {
             "$ref": "#/components/parameters/SearchLimit"
@@ -94,11 +97,11 @@
           "429": {
             "$ref": "#/components/responses/RateLimitExceeded"
           },
-          "502": {
-            "$ref": "#/components/responses/UpstreamFailure"
-          },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamFailure"
           }
         }
       }
@@ -107,8 +110,8 @@
       "post": {
         "operationId": "visualSearch",
         "summary": "Search products from an image",
-        "description": "Market-scoped product search from a hosted HTTPS image URL, optionally fused with natural-language shopper context. The returned results array may contain fewer items than limit after the shared product-fit relevance guard.",
-        "x-simlir-credits": 3,
+        "description": "Market-scoped product search from a hosted HTTPS image URL, optionally fused with natural-language shopper context. The service relevance-checks up to 50 Simlir catalogue candidates and up to 50 supplementary partner catalogue candidates, then returns at most 100 combined results. The default limit is 100 and applies to the combined response. Image searches may send image content, query, market and filters to a partner product catalogue; see the privacy policy. The returned results array may contain fewer items after relevance checking, filtering, deduplication, availability limits or provider failure.",
+        "x-simlir-credits": 2,
         "requestBody": {
           "required": true,
           "content": {
@@ -144,11 +147,11 @@
           "429": {
             "$ref": "#/components/responses/RateLimitExceeded"
           },
-          "502": {
-            "$ref": "#/components/responses/UpstreamFailure"
-          },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamFailure"
           }
         }
       }
@@ -372,12 +375,12 @@
         "name": "limit",
         "in": "query",
         "required": false,
-        "description": "Maximum number of results requested. The service may return fewer.",
+        "description": "Maximum number of combined results requested across both relevance-checked search lanes. Defaults to 100; the service may return fewer.",
         "schema": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 50,
-          "default": 20
+          "maximum": 100,
+          "default": 100
         }
       },
       "SearchOffset": {
@@ -387,7 +390,7 @@
         "schema": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 500,
+          "maximum": 99,
           "default": 0
         }
       },
@@ -400,6 +403,23 @@
           "minimum": 1,
           "maximum": 50,
           "default": 20
+        }
+      },
+      "ShipsFrom": {
+        "name": "ships_from",
+        "in": "query",
+        "required": false,
+        "description": "Optional seller shipping-origin country codes (ISO alpha-2), repeated for multiple countries. Defaults to the selected market. This filters where the merchant ships from, not the delivery destination; multiple origins use OR matching.",
+        "style": "form",
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$"
+          }
         }
       }
     },
@@ -444,11 +464,25 @@
     "schemas": {
       "MarketCode": {
         "type": "string",
-        "enum": ["gb", "us", "de", "fr", "es", "it", "au", "ca"]
+        "enum": [
+          "gb",
+          "us",
+          "de",
+          "fr",
+          "es",
+          "it",
+          "au",
+          "ca"
+        ]
       },
       "IdentifierLookupType": {
         "type": "string",
-        "enum": ["auto", "gtin", "mpn", "sku"],
+        "enum": [
+          "auto",
+          "gtin",
+          "mpn",
+          "sku"
+        ],
         "default": "auto"
       },
       "ApiProduct": {
@@ -501,40 +535,67 @@
             "type": "string"
           },
           "gtin": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "title": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Public canonical title, not the internal discovery title."
           },
           "description": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "product_description": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "spec": {
-            "type": ["object", "null"],
+            "type": [
+              "object",
+              "null"
+            ],
             "additionalProperties": true
           },
           "cosmetic_features": {
-            "type": ["object", "null"],
+            "type": [
+              "object",
+              "null"
+            ],
             "additionalProperties": true
           },
           "key_selling_points": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
               "type": "string"
             }
           },
           "use_cases": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
               "type": "string"
             }
           },
           "image_url": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uri"
           },
           "images": {
@@ -590,10 +651,16 @@
             "$ref": "#/components/schemas/Colour"
           },
           "release_year": {
-            "type": ["integer", "null"]
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "country_of_origin": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "compatible_with": {
             "type": "array",
@@ -608,28 +675,51 @@
             }
           },
           "model_number": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "retailer_sku": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "product_identifiers": {
             "type": "object",
             "additionalProperties": true
           },
           "review_score": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "review_count": {
-            "type": ["integer", "null"]
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "pricing_model": {
             "type": "string",
-            "enum": ["one_off", "contract_monthly", "subscription_recurring", "unknown"]
+            "enum": [
+              "one_off",
+              "contract_monthly",
+              "subscription_recurring",
+              "unknown"
+            ]
           },
           "product_condition": {
             "type": "string",
-            "enum": ["new", "refurbished", "used", "open_box", "unknown"]
+            "enum": [
+              "new",
+              "refurbished",
+              "used",
+              "open_box",
+              "unknown"
+            ]
           },
           "price": {
             "$ref": "#/components/schemas/Price"
@@ -645,7 +735,12 @@
       "VisualSummary": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["summary", "labels", "detected_text", "dominant_colours"],
+        "required": [
+          "summary",
+          "labels",
+          "detected_text",
+          "dominant_colours"
+        ],
         "properties": {
           "summary": {
             "type": "string"
@@ -673,7 +768,10 @@
       "Dimensions": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["value", "unit"],
+        "required": [
+          "value",
+          "unit"
+        ],
         "properties": {
           "value": {
             "type": "object",
@@ -689,7 +787,10 @@
       "Weight": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["value", "unit"],
+        "required": [
+          "value",
+          "unit"
+        ],
         "properties": {
           "value": {
             "type": "number"
@@ -702,32 +803,58 @@
       "Colour": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["primary", "family"],
+        "required": [
+          "primary",
+          "family"
+        ],
         "properties": {
           "primary": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "family": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
       "Price": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["amount", "currency", "retailer", "as_of"],
+        "required": [
+          "amount",
+          "currency",
+          "retailer",
+          "as_of"
+        ],
         "properties": {
           "amount": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "currency": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "retailer": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "as_of": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Date of the confirmed price snapshot when available."
           }
         }
@@ -735,14 +862,23 @@
       "ProductLinks": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["buy", "retailer"],
+        "required": [
+          "buy",
+          "retailer"
+        ],
         "properties": {
           "buy": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uri"
           },
           "retailer": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uri"
           }
         }
@@ -755,10 +891,15 @@
           },
           {
             "type": "object",
-            "required": ["relevance_score"],
+            "required": [
+              "relevance_score"
+            ],
             "properties": {
               "relevance_score": {
-                "type": ["number", "null"]
+                "type": [
+                  "number",
+                  "null"
+                ]
               }
             }
           }
@@ -767,7 +908,10 @@
       "SearchResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["results", "meta"],
+        "required": [
+          "results",
+          "meta"
+        ],
         "properties": {
           "results": {
             "type": "array",
@@ -783,7 +927,15 @@
       "SearchMeta": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["query", "mode", "market", "total_results", "limit", "offset", "credits_used"],
+        "required": [
+          "query",
+          "mode",
+          "market",
+          "total_results",
+          "limit",
+          "offset",
+          "credits_used"
+        ],
         "properties": {
           "query": {
             "type": "string"
@@ -801,25 +953,40 @@
           "limit": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 50
+            "maximum": 100
           },
           "offset": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 500
+            "maximum": 99
           },
           "credits_used": {
-            "const": 2
+            "const": 1
+          },
+          "results_returned": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "How many results this response carries: the page that is left after the display limit and offset are applied."
           }
         }
       },
       "ImageSearchRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["image_url"],
+        "required": [
+          "image_url"
+        ],
         "anyOf": [
-          { "required": ["market"] },
-          { "required": ["gl"] }
+          {
+            "required": [
+              "market"
+            ]
+          },
+          {
+            "required": [
+              "gl"
+            ]
+          }
         ],
         "properties": {
           "image_url": {
@@ -857,21 +1024,34 @@
           "limit": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 50,
-            "default": 20
+            "maximum": 100,
+            "default": 100
           },
           "offset": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 500,
+            "maximum": 99,
             "default": 0
+          },
+          "ships_from": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 12,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
+            },
+            "description": "Optional seller shipping-origin country codes (ISO alpha-2). Defaults to the selected market. This filters where the merchant ships from, not the delivery destination; multiple origins use OR matching."
           }
         }
       },
       "ImageSearchResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["results", "meta"],
+        "required": [
+          "results",
+          "meta"
+        ],
         "properties": {
           "results": {
             "type": "array",
@@ -887,7 +1067,14 @@
       "ImageSearchMeta": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["mode", "market", "total_results", "limit", "offset", "credits_used"],
+        "required": [
+          "mode",
+          "market",
+          "total_results",
+          "limit",
+          "offset",
+          "credits_used"
+        ],
         "properties": {
           "mode": {
             "const": "visual"
@@ -907,22 +1094,30 @@
           "limit": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 50
+            "maximum": 100
           },
           "offset": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 500
+            "maximum": 99
           },
           "credits_used": {
-            "const": 3
+            "const": 2
+          },
+          "results_returned": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "How many results this response carries: the page that is left after the display limit and offset are applied."
           }
         }
       },
       "ProductResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["product", "credits_used"],
+        "required": [
+          "product",
+          "credits_used"
+        ],
         "properties": {
           "product": {
             "$ref": "#/components/schemas/ApiProduct"
@@ -935,7 +1130,10 @@
       "LookupResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["results", "meta"],
+        "required": [
+          "results",
+          "meta"
+        ],
         "properties": {
           "results": {
             "type": "array",
@@ -951,7 +1149,18 @@
       "LookupMeta": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["identifier", "requested_type", "resolved_type", "matched_field", "market", "brand", "retailer", "total_results", "limit", "credits_used"],
+        "required": [
+          "identifier",
+          "requested_type",
+          "resolved_type",
+          "matched_field",
+          "market",
+          "brand",
+          "retailer",
+          "total_results",
+          "limit",
+          "credits_used"
+        ],
         "properties": {
           "identifier": {
             "type": "string"
@@ -960,21 +1169,43 @@
             "$ref": "#/components/schemas/IdentifierLookupType"
           },
           "resolved_type": {
-            "type": ["string", "null"],
-            "enum": ["gtin", "mpn", "sku", null]
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "gtin",
+              "mpn",
+              "sku",
+              null
+            ]
           },
           "matched_field": {
-            "type": ["string", "null"],
-            "enum": ["gtin", "model_number", "retailer_sku", null]
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "gtin",
+              "model_number",
+              "retailer_sku",
+              null
+            ]
           },
           "market": {
             "$ref": "#/components/schemas/MarketCode"
           },
           "brand": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "retailer": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "total_results": {
             "type": "integer",
@@ -993,7 +1224,10 @@
       "Error": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["error", "message"],
+        "required": [
+          "error",
+          "message"
+        ],
         "properties": {
           "error": {
             "type": "string"
@@ -1006,7 +1240,12 @@
       "RateLimitError": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["error", "limit", "window", "retry_after_seconds"],
+        "required": [
+          "error",
+          "limit",
+          "window",
+          "retry_after_seconds"
+        ],
         "properties": {
           "error": {
             "const": "rate_limit_exceeded"
@@ -1027,34 +1266,52 @@
       "McpRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["jsonrpc", "method"],
+        "required": [
+          "jsonrpc",
+          "method"
+        ],
         "properties": {
           "jsonrpc": {
             "const": "2.0"
           },
           "method": {
             "type": "string",
-            "enum": ["initialize", "tools/list", "tools/call"]
+            "enum": [
+              "initialize",
+              "tools/list",
+              "tools/call"
+            ]
           },
           "params": {
             "type": "object",
             "additionalProperties": true
           },
           "id": {
-            "type": ["string", "integer", "null"]
+            "type": [
+              "string",
+              "integer",
+              "null"
+            ]
           }
         }
       },
       "McpResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["jsonrpc", "id"],
+        "required": [
+          "jsonrpc",
+          "id"
+        ],
         "properties": {
           "jsonrpc": {
             "const": "2.0"
           },
           "id": {
-            "type": ["string", "integer", "null"]
+            "type": [
+              "string",
+              "integer",
+              "null"
+            ]
           },
           "result": {},
           "error": {
@@ -1063,15 +1320,23 @@
         },
         "oneOf": [
           {
-            "required": ["result"],
+            "required": [
+              "result"
+            ],
             "not": {
-              "required": ["error"]
+              "required": [
+                "error"
+              ]
             }
           },
           {
-            "required": ["error"],
+            "required": [
+              "error"
+            ],
             "not": {
-              "required": ["result"]
+              "required": [
+                "result"
+              ]
             }
           }
         ]
@@ -1079,11 +1344,23 @@
       "McpError": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["code", "message"],
+        "required": [
+          "code",
+          "message"
+        ],
         "properties": {
           "code": {
             "type": "integer",
-            "enum": [-32700, -32600, -32601, -32602, -32603, -32001, -32003, -32004]
+            "enum": [
+              -32700,
+              -32600,
+              -32601,
+              -32602,
+              -32603,
+              -32001,
+              -32003,
+              -32004
+            ]
           },
           "message": {
             "type": "string"
@@ -1096,10 +1373,18 @@
       "SearchResponse": {
         "description": "Semantic search response",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
-          "X-RateLimit-Limit": { "$ref": "#/components/headers/X-RateLimit-Limit" },
-          "X-RateLimit-Remaining": { "$ref": "#/components/headers/X-RateLimit-Remaining" },
-          "X-RateLimit-Reset": { "$ref": "#/components/headers/X-RateLimit-Reset" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
         },
         "content": {
           "application/json": {
@@ -1112,10 +1397,18 @@
       "ImageSearchResponse": {
         "description": "Visual search response",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
-          "X-RateLimit-Limit": { "$ref": "#/components/headers/X-RateLimit-Limit" },
-          "X-RateLimit-Remaining": { "$ref": "#/components/headers/X-RateLimit-Remaining" },
-          "X-RateLimit-Reset": { "$ref": "#/components/headers/X-RateLimit-Reset" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
         },
         "content": {
           "application/json": {
@@ -1128,10 +1421,18 @@
       "ProductResponse": {
         "description": "Product lookup response",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
-          "X-RateLimit-Limit": { "$ref": "#/components/headers/X-RateLimit-Limit" },
-          "X-RateLimit-Remaining": { "$ref": "#/components/headers/X-RateLimit-Remaining" },
-          "X-RateLimit-Reset": { "$ref": "#/components/headers/X-RateLimit-Reset" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
         },
         "content": {
           "application/json": {
@@ -1144,10 +1445,18 @@
       "LookupResponse": {
         "description": "Identifier lookup response",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
-          "X-RateLimit-Limit": { "$ref": "#/components/headers/X-RateLimit-Limit" },
-          "X-RateLimit-Remaining": { "$ref": "#/components/headers/X-RateLimit-Remaining" },
-          "X-RateLimit-Reset": { "$ref": "#/components/headers/X-RateLimit-Reset" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
         },
         "content": {
           "application/json": {
@@ -1160,7 +1469,9 @@
       "InvalidParams": {
         "description": "The request parameters or body are invalid.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {
@@ -1173,7 +1484,9 @@
       "InvalidApiKey": {
         "description": "The API key is missing, invalid, or revoked.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {
@@ -1186,7 +1499,9 @@
       "InsufficientCredits": {
         "description": "The account has insufficient credits.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {
@@ -1199,7 +1514,9 @@
       "AccountFrozen": {
         "description": "The account is frozen by staff review.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {
@@ -1212,7 +1529,9 @@
       "ProductNotFound": {
         "description": "No product matched the UUID.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {
@@ -1225,7 +1544,9 @@
       "MethodNotAllowed": {
         "description": "The HTTP method is not supported for this public route.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          },
           "Allow": {
             "schema": {
               "type": "string"
@@ -1243,7 +1564,9 @@
       "PayloadTooLarge": {
         "description": "The image-search request body exceeds the deployed 64 KiB limit.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {
@@ -1256,7 +1579,9 @@
       "RateLimitExceeded": {
         "description": "The account exceeded a rate limit. Retry after the indicated interval.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" },
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          },
           "X-RateLimit-Limit": {
             "schema": {
               "type": "integer"
@@ -1290,7 +1615,9 @@
       "UpstreamFailure": {
         "description": "A required embedding, visual-search, or other upstream dependency was unavailable.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {
@@ -1303,7 +1630,9 @@
       "InternalError": {
         "description": "An unexpected server error. The response is intentionally generic; use the returned request ID with support.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {
@@ -1316,7 +1645,9 @@
       "McpBadRequest": {
         "description": "Invalid JSON or invalid JSON-RPC request. MCP method/auth errors use the 200 JSON-RPC envelope.",
         "headers": {
-          "X-Request-Id": { "$ref": "#/components/headers/X-Request-Id" }
+          "X-Request-Id": {
+            "$ref": "#/components/headers/X-Request-Id"
+          }
         },
         "content": {
           "application/json": {

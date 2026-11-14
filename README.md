@@ -1,14 +1,17 @@
 # Simlir public API contract
 
-This directory is the release candidate for the public Simlir REST and hosted MCP contract. It contains only the public contract, generated language types, and compatibility fixtures. It must never contain application source, database exports, ingestion metadata, embeddings, credentials, or private operational configuration. The selected contract artefact scope is intended to use Apache-2.0, subject to final legal scope review; API access and returned data remain governed by Simlir's API/Data Licence.
+This directory is the application-repository mirror for the public Simlir REST and hosted MCP contract. The published v1.0.0 contract is maintained in `simlir/spec`; this mirror contains only the public contract, generated language types, and compatibility fixtures. It must never contain application source, database exports, ingestion metadata, embeddings, credentials, or private operational configuration. The public contract artefact scope uses Apache-2.0; API access and returned data remain governed by Simlir's API/Data Licence.
 
 ## Publication decision
 
 The recommended V1 canonical publication is a dedicated `simlir/spec` repository with versioned releases. The repository should publish the OpenAPI artifact, generated TypeScript and Python types, and the compatibility fixtures together. A separate npm or PyPI package for the spec is not required for V1; SDK packages consume a pinned spec release instead of copying fields by hand.
 
 The canonical repository is `https://github.com/simlir/spec`. Its first
-versioned release, stable contract URL, and deployment remain unverified until
-the publication gates in [`PUBLISHING.md`](PUBLISHING.md) are evidenced.
+versioned release is available at
+`https://github.com/simlir/spec/releases/tag/v1.0.0`. Consumers should pin that
+release or an immutable commit. A separately deployed stable contract URL is not
+claimed by this application repository; the repository release is the public
+contract publication evidence.
 
 ## Contents
 
@@ -36,6 +39,18 @@ that ranked result window: it may show only a small shortlist and query-linked
 sales copy, but it does not use a separate image-search algorithm. Exact
 identifier lookup is the deliberate exception because it is an exact-match
 operation rather than semantic search.
+
+## How this repository stays current
+
+Do not edit this repository by hand. It is a mirror, published automatically
+from the `contract/` folder of the product repository (`simlir/simlir-cloudflare`),
+which holds the contract, the generator and the validators next to the code
+that implements the API. A change to the contract is made there, checked there
+(`npm run api:contract:release:check`), and copied here by a workflow when it
+reaches `main`. Every day a second workflow compares this repository's
+`openapi.json` with the one the live API serves at
+<https://simlir.com/api/openapi.json> and raises an issue if they differ, so a
+copy that has fallen behind is reported instead of staying quietly wrong.
 
 ## Repository verification
 

@@ -1,0 +1,60 @@
+name: Live API contract matches this repository
+
+# Every day, and on demand: the contract the live API serves must equal openapi.json here.
+# If it does not, this repository has fallen behind (or the API has changed without a published contract),
+# so the run fails and one issue is opened or updated. It needs no secrets.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch the checked revision
+        run: |
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach "${GITHUB_SHA}"
+
+      - name: Compare with the contract the live API serves
+        id: compare
+        run: |
+          curl -fsS --retry 3 --retry-delay 5 --max-time 30 https://simlir.com/api/openapi.json -o /tmp/live.json
+          python3 - <<'PY' | tee /tmp/report.txt
+          import json
+          live = json.load(open('/tmp/live.json'))
+          spec = json.load(open('openapi.json'))
+          if live == spec:
+              print('The live contract and openapi.json are identical.')
+              raise SystemExit(0)
+          print('The live API serves a different contract from openapi.json.')
+          for key in sorted(set(live) | set(spec)):
+              if live.get(key) != spec.get(key):
+                  print(f'- top-level section differs: {key}')
+          live_schemas = live.get('components', {}).get('schemas', {})
+          spec_schemas = spec.get('components', {}).get('schemas', {})
+          for name in sorted(set(live_schemas) | set(spec_schemas)):
+              if live_schemas.get(name) != spec_schemas.get(name):
+                  print(f'- schema differs: {name}')
+          for path in sorted(set(live.get('paths', {})) | set(spec.get('paths', {}))):
+              if live.get('paths', {}).get(path) != spec.get('paths', {}).get(path):
+                  print(f'- path differs: {path}')
+          raise SystemExit(1)
+          PY
+
+      - name: Raise one issue when they differ
+        if: ${{ failure() && github.event_name == 'schedule' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="The live API's contract no longer matches this repository"
+          body="$(printf '%s\n\nSee the failed run: %s/%s/actions/runs/%s\n\nThe contract is changed in the product repository (`simlir/simlir-cloudflare`, folder `contract/`) and copied here by its publish workflow. If that workflow did not run, run it by hand.' "$(cat /tmp/report.txt 2>/dev/null)" "${GITHUB_SERVER_URL}" "${GITHUB_REPOSITORY}" "${GITHUB_RUN_ID}")"
+          existing="$(gh issue list --state open --search "\"${title}\" in:title" --json number --jq '.[0].number' || true)"
+          if [ -n "${existing}" ]; then gh issue comment "${existing}" --body "${body}"; else gh issue create --title "${title}" --body "${body}"; fi
