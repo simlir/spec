@@ -1,5 +1,5 @@
 /* AUTO-GENERATED — do not edit. Source: ../openapi.json */
-/* Source SHA-256: ba9e3f55884039e399ac26d0c58257d5b944820d5a3d4afad92b67aca41ed503 */
+/* Source SHA-256: d311983e681c3a75c277f347c99e92a838929f984b8616f468bcc124f7e9b350 */
 
 export type MarketCode = "gb" | "us" | "de" | "fr" | "es" | "it" | "au" | "ca";
 
@@ -91,7 +91,8 @@ export type SearchMeta = {
   total_results: number;
   limit: number;
   offset: number;
-  credits_used: 2;
+  credits_used: 1;
+  results_returned: number;
 };
 
 // JSON Schema requires one of the declared alternatives.
@@ -106,6 +107,7 @@ export type ImageSearchRequest = {
   max_price?: number;
   limit?: number;
   offset?: number;
+  ships_from?: string[];
 };
 
 export type ImageSearchResponse = {
@@ -120,7 +122,8 @@ export type ImageSearchMeta = {
   total_results: number;
   limit: number;
   offset: number;
-  credits_used: 3;
+  credits_used: 2;
+  results_returned: number;
 };
 
 export type ProductResponse = {

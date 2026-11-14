@@ -1,5 +1,5 @@
 """AUTO-GENERATED — do not edit. Source: ../openapi.json."""
-# Source SHA-256: ba9e3f55884039e399ac26d0c58257d5b944820d5a3d4afad92b67aca41ed503
+# Source SHA-256: d311983e681c3a75c277f347c99e92a838929f984b8616f468bcc124f7e9b350
 
 from __future__ import annotations
 from typing import Any, Literal, NotRequired, TypedDict
@@ -85,7 +85,8 @@ class SearchMeta(TypedDict):
     total_results: int
     limit: int
     offset: int
-    credits_used: Literal[2]
+    credits_used: Literal[1]
+    results_returned: int
 
 class ImageSearchRequest(TypedDict):
     image_url: str
@@ -98,6 +99,7 @@ class ImageSearchRequest(TypedDict):
     max_price: NotRequired[float]
     limit: NotRequired[int]
     offset: NotRequired[int]
+    ships_from: NotRequired[list[str]]
 
 class ImageSearchResponse(TypedDict):
     results: list[SearchResult]
@@ -110,7 +112,8 @@ class ImageSearchMeta(TypedDict):
     total_results: int
     limit: int
     offset: int
-    credits_used: Literal[3]
+    credits_used: Literal[2]
+    results_returned: int
 
 class ProductResponse(TypedDict):
     product: ApiProduct

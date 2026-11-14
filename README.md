@@ -12,7 +12,7 @@ the publication gates in [`PUBLISHING.md`](PUBLISHING.md) are evidenced.
 
 ## Contents
 
-- `openapi.json` — OpenAPI 3.1 contract, version `1.0.0`.
+- `openapi.json` — OpenAPI 3.1 contract, version `1.1.0`.
 - `LICENSE` — Apache-2.0 for the public contract artefact scope; API access and
   returned data remain governed by Simlir's applicable terms.
 - `generated/types.ts` and `generated/types.py` — deterministic artifacts generated from `openapi.json`.

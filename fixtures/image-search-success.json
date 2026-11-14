@@ -37,5 +37,5 @@
       "relevance_score": null
     }
   ],
-  "meta": { "mode": "visual", "market": "gb", "query": "a compact smartphone for gaming", "total_results": 1, "limit": 10, "offset": 0, "credits_used": 3 }
+  "meta": { "mode": "visual", "market": "gb", "query": "a compact smartphone for gaming", "total_results": 1, "limit": 10, "offset": 0, "credits_used": 2, "results_returned": 1 }
 }
