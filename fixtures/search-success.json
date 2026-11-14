@@ -49,6 +49,7 @@
     "total_results": 1,
     "limit": 10,
     "offset": 0,
-    "credits_used": 2
+    "credits_used": 1,
+    "results_returned": 1
   }
 }

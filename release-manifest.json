@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "releaseStatus": "release-candidate",
   "contract": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "openapi": "3.1.0",
     "sourcePath": "openapi.json",
-    "sourceSha256": "ba9e3f55884039e399ac26d0c58257d5b944820d5a3d4afad92b67aca41ed503"
+    "sourceSha256": "d311983e681c3a75c277f347c99e92a838929f984b8616f468bcc124f7e9b350"
   },
   "canonicalPublication": {
     "mode": "dedicated-repository-release",
     "repositorySlug": "simlir/spec",
-    "repositoryUrl": null,
+    "repositoryUrl": "https://github.com/simlir/spec",
     "stablePublicUrl": null,
     "packagePublication": "not-planned-for-v1",
     "status": "unverified"
@@ -18,7 +18,7 @@
   "artifacts": [
     {
       "path": "README.md",
-      "sha256": "2da3f17a7bd79fbea9fac7078322897fe270537c50dbb801c78bc7ad40aa0feb"
+      "sha256": "3fe406091b96ccade7eff23e0f8bc669fcf317418005a9282cbb55393eee6e68"
     },
     {
       "path": "PUBLISHING.md",
@@ -30,15 +30,15 @@
     },
     {
       "path": "openapi.json",
-      "sha256": "ba9e3f55884039e399ac26d0c58257d5b944820d5a3d4afad92b67aca41ed503"
+      "sha256": "d311983e681c3a75c277f347c99e92a838929f984b8616f468bcc124f7e9b350"
     },
     {
       "path": "generated/types.ts",
-      "sha256": "edcefd7e94dd44c643a78dae4442b849938948d1c218f895986fb80d6b98f44c"
+      "sha256": "7cd9b0b668d0968cea8f0f9db2da2fe5c43786c7a511968170cc9f9cd284cde2"
     },
     {
       "path": "generated/types.py",
-      "sha256": "48eea59d65338a54c8b087904000db962318bca28aef26ee3b9c4d348a16c5c9"
+      "sha256": "21ecafebdde8c5dbffe0bac6174db264b2e6f6fb351fe968e5f9f5a569c2d760"
     },
     {
       "path": "fixtures/manifest.json",
@@ -46,15 +46,15 @@
     },
     {
       "path": "fixtures/search-success.json",
-      "sha256": "5978d624c050ec86e1c479d73ff778369fe27efa01ed85554ad7dd8867a2091a"
+      "sha256": "1ace6e51bf0614b1ef9e577ab0f9a3d05e2ef02b07fabf3e337e844cfc17ca64"
     },
     {
       "path": "fixtures/search-empty.json",
-      "sha256": "80393bef332a171f822d4d30d8adce06de737ce634f0dc86bff12f45dc320922"
+      "sha256": "738b330f01ef1121ad385c18997b11d082528863e8887e8ab59b62c17a5099da"
     },
     {
       "path": "fixtures/image-search-success.json",
-      "sha256": "112b5a19cd8c93255106be38759fdc2d58e79454dd28e45795390f70ae669efb"
+      "sha256": "d75787e96797ef47808b9d82f0fb69a17c096a3f270c22326b1d7e5980ee4606"
     },
     {
       "path": "fixtures/image-search-request.json",
